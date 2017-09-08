@@ -148,10 +148,7 @@ bool  Enquadramento::handle(char byte, char* in_buffer){
 void gen_crc(char * buffer, int len){
    uint16_t = aux;
    aux = pppfcs16(PPPINITFCS16,buffer,len);
-   aux ^= 0xffff;
-   
-   buffer[len] = (aux & 0x00ff);
-   buffer[len + 1] = ((aux >> 8) & 0x00ff); 
+
 }
 
 uint16_t pppfcs16(uint16_t fcs, char * cp, int len){
