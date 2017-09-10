@@ -1,7 +1,8 @@
-
 #include "Enquadramento.h"
 #include "fcstab.h"
+#include <assert.h>
 #include <time.h>
+
 using namespace std;
 time_t mytimer;
 
@@ -143,6 +144,21 @@ bool  Enquadramento::handle(char byte, char* in_buffer){
        printf ("Estado da MEF invalido!\n");
        return false;
   }	
+}
+bool check_crc(char * buffer, int len){
+   char * aux;
+   uint16_t = validacao;
+   int lenAux = len - 2;
+   
+   for(int i = 0;i < lenAux; i++){
+      aux[i] = buffer[i];   
+   }
+
+   validacao = pppfcs16(PPPINITFCS16,aux,lenAux);
+   validacao ^= 0xffff;
+
+   if(buffer[len - 1] == (validacao & 0x00ff) and buffer[len] == ((validacao >> 8) & 0x00ff)) return true;
+   else return false;   
 }
 
 void gen_crc(char * buffer, int len){

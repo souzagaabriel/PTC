@@ -4,6 +4,7 @@
 #include <iostream>
 //#include <iomanip>
 #include <fstream>
+#include <assert.h>
 #include "fcstab.h"
 #include <stdio.h>
 #include <errno.h>
