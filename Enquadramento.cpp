@@ -1,6 +1,7 @@
 #include "Enquadramento.h"
 #include "fcstab.h"
 #include <assert.h>
+#include "arq.h"
 #include <time.h>
 
 using namespace std;
@@ -51,10 +52,14 @@ void  Enquadramento::envia(char * buffer, int bytes){
 		printf(" %x", aux_buffer[u]);
 	}
 	
+        //ARQ
+        arq enviar("data");
+        char * encap = enviar.mensagem(buffer,len);
+
 	// Envia o frame	
 	int n = 0;
 	if( (j>=min_bytes) && (j<=max_bytes) ){		
-		n = porta.write(aux_buffer, j);	
+		n = porta.write(encap, j);	
 		cout << "\nEnviou " << n << " bytes." << endl;
 	}else{
 		cout << "\nTamanho da mensagem fora dos limites!!! Mensagem não enviada!"<< endl;

@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include "Serial.h"
+#include "arq.h"
  
 class Enquadramento {
 public:
