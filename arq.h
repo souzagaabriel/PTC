@@ -3,6 +3,7 @@
  
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "fcstab.h"
 #include <stdio.h>
 #include <errno.h>
@@ -13,12 +14,15 @@
 class arq{
 private:
 
-   string tipo_msg;
+   char tipo_msg;
    int num_seq, id, tam;
    char * msg_encapsulada;
 
 public:
 
-   arq(string tipo);
+   arq(char tipo);
    char * mensagem(char * buffer,int len);
-}
+};
+
+ 
+#endif

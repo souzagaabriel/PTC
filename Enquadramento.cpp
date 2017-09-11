@@ -53,8 +53,8 @@ void  Enquadramento::envia(char * buffer, int bytes){
 	}
 	
         //ARQ
-        arq enviar("data");
-        char * encap = enviar.mensagem(buffer,len);
+        arq enviar('d');
+        auto encap = enviar.mensagem(buffer,bytes);
 
 	// Envia o frame	
 	int n = 0;
@@ -150,9 +150,9 @@ bool  Enquadramento::handle(char byte, char* in_buffer){
        return false;
   }	
 }
-bool check_crc(char * buffer, int len){
+bool Enquadramento::check_crc(char * buffer, int len){
    char * aux;
-   uint16_t = validacao;
+   uint16_t validacao;
    int lenAux = len - 2;
    
    for(int i = 0;i < lenAux; i++){
@@ -166,8 +166,8 @@ bool check_crc(char * buffer, int len){
    else return false;   
 }
 
-void gen_crc(char * buffer, int len){
-   uint16_t = aux;
+void Enquadramento::gen_crc(char * buffer, int len){
+   uint16_t aux;
    aux = pppfcs16(PPPINITFCS16,buffer,len);
    aux ^= 0xffff;
    
@@ -175,10 +175,10 @@ void gen_crc(char * buffer, int len){
    buffer[len + 1] = ((aux >> 8) & 0x00ff); 
 }
 
-uint16_t pppfcs16(uint16_t fcs, char * cp, int len){
+uint16_t Enquadramento::pppfcs16(uint16_t fcs, char * cp, int len){
 
-   ASSERT(sizeof (uint16_t) == 2);
-   ASSERT(((uint16_t) -1) > 0);
+   assert(sizeof (uint16_t) == 2);
+   assert(((uint16_t) -1) > 0);
 
    while (len--) fcs = (fcs >> 8) ^ fcstab[(fcs ^ *cp++) & 0xff];
    return (fcs);

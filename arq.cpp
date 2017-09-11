@@ -10,15 +10,14 @@
 
 using namespace std;
 
-arq::arq(string tipo){
+arq::arq(char tipo){
    tipo_msg = tipo;
    tam = 0;
    num_seq = 0;
 }
 
 char * arq::mensagem(char * buffer,int len){
-   if(tipo_msg == "data") msg_encapsulada[tam] = 'd';
-   else if (tipo_msg == "ack") msg_encapsulada[tam] = 'a';
+   msg_encapsulada[tam] = tipo_msg;
  
    tam++;
  
@@ -37,6 +36,6 @@ char * arq::mensagem(char * buffer,int len){
       tam ++;
    }
    char * retorno = msg_encapsulada;
-   return &(retorno);
+   return (retorno);
    
 }
