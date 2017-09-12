@@ -15,7 +15,7 @@ class arq{
 private:
 
    char tipo_msg;
-   int num_seq, id, tam;
+   int num_seq, tam;
    char * msg_encapsulada;
 
 public:

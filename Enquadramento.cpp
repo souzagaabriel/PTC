@@ -28,7 +28,7 @@ void  Enquadramento::envia(char * buffer, int bytes){
 	}
 	
 	gen_crc(buffer,bytes);
-
+	bytes = bytes + 2;
 	// Prepara o frame
 	aux_buffer[0] = 0x7E;// Sentinela início mensagem
 	int j = 1;
@@ -54,7 +54,8 @@ void  Enquadramento::envia(char * buffer, int bytes){
 	
         //ARQ
         arq enviar('d');
-        auto encap = enviar.mensagem(buffer,bytes);
+        auto encap = enviar.mensagem(buffer,j);
+	j = j + 2;
 
 	// Envia o frame	
 	int n = 0;
