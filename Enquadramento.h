@@ -2,16 +2,14 @@
 #define FRAMING_H
  
 #include <iostream>
-//#include <iomanip>
 #include <fstream>
 #include <assert.h>
 #include "fcstab.h"
 #include <stdio.h>
 #include <errno.h>
-
 #include <cstdint>
 #include "Serial.h"
-#include "arq.h"
+//#include "arq.h"
  
 class Enquadramento {
 public:
@@ -20,11 +18,11 @@ public:
  
  // envia o quadro apontado por buffer
  // o tamanho do quadro é dado por bytes
- void envia(char * buffer, int bytes);
+ void envia(unsigned char * buffer, int bytes);
  
  // espera e recebe um quadro, armazenando-o em buffer
  // retorna o tamanho do quadro recebido
- int recebe(char * buffer);
+ int recebe(unsigned char * buffer);
 
 private:
  int min_bytes, max_bytes; // tamanhos mínimo e máximo de quadro
@@ -41,21 +39,21 @@ private:
  
  // aqui se implementa a máquina de estados de recepção
  // retorna true se reconheceu um quadro completo
- bool handle(char byte, char * buffer);
+ bool handle(char byte, unsigned char * buffer);
 
 // verifica o CRC do conteúdo contido em "buffer". Os dois últimos 
 // bytes desse buffer contém o valor de CRC
-bool check_crc(char * buffer, int len);
+bool check_crc(unsigned char * buffer, int len);
  
 // gera o valor de CRC dos bytes contidos em buffer. O valor de CRC
 // é escrito em buffer[len] e buffer[len+1]
-void gen_crc(char * buffer, int len);
+void gen_crc( unsigned char * buffer, int len);
  
 // calcula o valor de CRC dos bytes contidos em "cp".
 // "fcs" deve ter o valor PPPINITFCS16
 // O resultado é o valor de CRC (16 bits)
 // OBS: adaptado da RFC 1662 (enquadramento no PPP)
- uint16_t pppfcs16(uint16_t fcs, char * cp, int len);
+ uint16_t pppfcs16(uint16_t fcs, unsigned char * cp, int len);
  
 };
  
