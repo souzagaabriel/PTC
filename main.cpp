@@ -9,9 +9,12 @@
 using namespace std;
 
 
-Serial rf("/dev/ttyUSB0", B9600);
+Serial rf("/dev/pts/6", B9600);
+Serial tf("/dev/pts/17", B9600);
 
-Enquadramento radio(rf, 8, 40);
+
+Enquadramento *radio= new Enquadramento(rf, 8, 40);
+Enquadramento *radio2= new Enquadramento(tf, 8, 40);
 
 string msg = "um~} teste\r\n";
 
@@ -20,19 +23,21 @@ char buffer[32];
 int n = 0;
 char ex = 0x7e;
 
+void recebe(){
+    ARQ receb(*radio2);
+
+    n = tf.read(buffer,32);
+    receb.recebe(reinterpret_cast<unsigned char *>(buffer), n);
+
+}
 int main() {
 
-    //cout << "Isso é um teste !!!" << endl;
-    //cout << "msg.size(): " << msg.size() << endl;
-
-    ARQ radio1(radio);
-    radio1.envia(&msg[0], msg.size());
+    ARQ radio1(*radio);
+    radio1.envia(reinterpret_cast<unsigned char *>(&msg[0]), msg.size());
     //radio.envia((char*)"1.2.3.4.5.6.7.8.9.0 m", 19);
     sleep(2);
-    n = rf.read(buffer, 32);
-    cout << "Recebeu " << n << " bytes. \n";
-
-    cout.write(buffer, n);
+    recebe();
 
     cout << endl;
     return 0;
+}

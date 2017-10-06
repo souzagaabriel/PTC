@@ -28,6 +28,8 @@ public:
     // retorna o tamanho do quadro recebido
     int recebe();
 
+    const unsigned char *getBuffer() const;
+
 private:
 
     int min_bytes, max_bytes; // tamanhos mínimo e máximo de quadro

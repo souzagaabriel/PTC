@@ -190,3 +190,8 @@ uint16_t Enquadramento::pppfcs16(uint16_t fcs, unsigned char * cp, int len){
 
 }
 
+const unsigned char *Enquadramento::getBuffer() const {
+    return buffer;
+}
+
+

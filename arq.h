@@ -15,6 +15,7 @@
 
 #include <cstdint>
 #include "Serial.h"
+class Enquadramento;
 
 class ARQ {
 private:

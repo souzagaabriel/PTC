@@ -21,23 +21,26 @@ ARQ::ARQ(Enquadramento & e): enq(e) {
     tseq = 0;
 }
 
-void ARQ::envia(unsigned char * buffer, int bytes){
+void ARQ::envia(unsigned char * buffer, int bytes) {
     TipoEvento e = Payload;
-    Evento E = Evento(e,buffer,bytes);
-
+    Evento E = Evento(e, buffer, bytes);
     handle(E);
 
-    int i = 0;
-    do{
-        i = enq.recebe();
+    while(E.tipo == Payload){
+        int i = 0;
+        do {
+            i = enq.recebe();
+        } while (i == 0);
+
+        Evento R = Evento(Quadro, const_cast<unsigned char *>(enq.getBuffer()), i);
+        handle(R);
+
+        E.tipo = R.tipo;
     }
-    while(i == 0);
-
-    E.tipo = Quadro;
-    handle(E);
 }
 
 int ARQ::recebe(unsigned char * p,int bytes){
+    //TODO Testar Recebe
     TipoEvento e = Quadro;
     Evento E = Evento(e,p,bytes);
 
@@ -98,17 +101,19 @@ void ARQ::handle(Evento& e){
             switch(e.tipo){
                 case Payload:
                     // armazenar
-                    // aguardar confirmação
-                    // enviar
+                    // reenviar dado
                     break;
                 case Quadro:
                     if(e.msg[0] == FAck | (rseq << 1)) {
                         cout << "Ack recebido" << e.msg[0];
                         estado = Ocioso;
-                    }else{
-                        cout << "Ack incorreto" ;
-                        estado = Espera;
-                        //reeviar
+                    }else if(e.msg[0] == FData | (rseq << 1)) {
+                        estado = Ocioso;
+                        e.tipo = Payload;
+                    }else {
+                        cout << "Ack incorreto";
+                        estado = Ocioso;
+                        e.tipo = Payload;
                     }
                     break;
                 case TimeOut:
