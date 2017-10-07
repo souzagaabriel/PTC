@@ -15,13 +15,14 @@
 
 #include <cstdint>
 #include "Serial.h"
+#include "fila.h"
+
 class Enquadramento;
 
 class ARQ {
 private:
 
     //enum Vocabulario {DATA0, DATA1, ACK0, ACK1};
-
     enum TipoEvento {
         Payload, Quadro, TimeOut
     };
@@ -40,6 +41,10 @@ private:
     int rseq, tseq;
     Enquadramento & enq;
 
+    fila<char> *Fila;
+    bool msgEmEspera;
+
+
     void handle(Evento &e);
 
 public:
@@ -48,7 +53,7 @@ public:
 
     void envia( unsigned char *buffer, int bytes);
 
-    int recebe(unsigned char * p,int bytes);
+    int recebe();
 };
 
 

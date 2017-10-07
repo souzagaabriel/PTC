@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <cstdint>
 #include "Serial.h"
-#include "ARQ.h"
+#include "arq.h"
 
 class Enquadramento {
 public:

@@ -3,7 +3,7 @@
 //
 
 #include "Enquadramento.h"
-#include "ARQ.h"
+#include "arq.h"
 #include <time.h>
 
 using namespace std;
