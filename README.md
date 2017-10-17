@@ -1,27 +1,10 @@
 # Projeto 1
 
 #### Coisas para fazer:
-> - Bateria de testes ( Envio de mensagens corrompidas )
-> - Recepção de mensagens livres de erros ( CRC 16 bits)
-[link auxiliar](https://tools.ietf.org/html/rfc1662#page-18)
-> - Garantia de entrega: Stop and Wait(ARQ)
-    Coloca cabeçalho: Tipo quadro, nº sequência, Id app, e passa para Enquadramento.
-    Vocabulário ={DATA0, DATA1, ACK0, ACK1}
-    Funções: *Bloqueantes
-        `envia()`
-        `recebe()`
-        `handle()` *Máquina de estados
-
-    Classes:
-        Enquadramento------->Protocolo<----    ARQ
-> - Vocabulário ={DATA0, DATA1, ACK0, ACK1}
-
-> - Time out - Máquina de estados recepção
-> - Implementar para arduino
-> - Documentação PDF
+> - Utilizando a serialemu:
+1- Baixe e execute a serialemu conforme tutorial do Professor Marcelo Maia Sobral disponibilizado na pagina da disciplina na wiki, Serialemu disponivel [neste link](http://tele.sj.ifsc.edu.br/~msobral/ptc/Serialemu.zip)
+2- Após executado a serialemu, abra os arquivos A.ccp e B.cpp, e coloque o valor das portas gerado no campo `Serial rf(*digite*, B9600);`
+3- Execute no terminal o comando *make*
+4- Execute digitando `./A1` e `./B1`
 
 
-##### Discussão
-
-###### Ultima alteração
-IMplementado o gen_CRC (Ainda não testado)

@@ -1,22 +1,30 @@
-all: msg tx
+A1_objects = A.o Enquadramento.o Serial.o arq.o
+B1_objects = B.o Enquadramento.o Serial.o arq.o
 
-msg:
-	@echo Executando makefile
-	
-tx: main.o Enquadramento.o Serial.o arq.o
-	g++ -g -o tx main.o Enquadramento.o Serial.o arq.o
+all : placa1 placad
 
-main.o: main.cpp
-	g++ -g -c main.cpp -std=c++11
+A1: $(placad_objects)
+	g++ -pthread -o A1 $(placad_objects)
+
+B1: $(placa1_objects)
+	g++ -pthread -o B1 $(placa1_objects)
+
+B.o: B.cpp
+	g++ -pthread -g -c B.cpp -std=c++11
+A.o: A.cpp
+	g++ -pthread -g -c A.cpp -std=c++11
 	
 Serial.o: Serial.cpp Serial.h
-	g++ -g -c Serial.cpp -std=c++11
+	g++ -pthread -g -c Serial.cpp -std=c++11
 	
 Enquadramento.o: Enquadramento.cpp Enquadramento.h
-	g++ -g -c Enquadramento.cpp -std=c++11
+	g++ -pthread -g -c Enquadramento.cpp -std=c++11
 
 arq.o: arq.cpp arq.h
-	g++ -g -c arq.cpp -std=c++11
-	
+	g++ -pthread -g -c arq.cpp -std=c++11
+
+
+
+
 clean:
-	-rm -f *.o *~
+	rm -f *.o A1 B1
