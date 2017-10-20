@@ -1,6 +1,11 @@
 # Instituto Federal de Santa Catarina
 ## PTC29008
 
+### Compilação do arquivo proto.cpp
+>- Baixe os arquivos para sua pasta de trabalho e execute no terminal o comando $make proto
+*	No arquivo proto.cpp é preciso definir a Serial que será utilizada
+*	Exemplo: Serial rf("/dev/ttyUSB0", B9600);
+
 ### Tutorial de utilização da SerialEmu
 
 #### Utilizando a serialemu:
