@@ -1,0 +1,283 @@
+#include "ARQ.h"
+//#define Debug
+
+#define FData 0
+#define FAck 1
+
+using namespace std;
+
+ARQ::ARQ(Enquadramento & e):enquad(e) {
+    estado = 0;//ocioso;
+    rseq = 0;
+    tseq = 0;
+}
+
+ARQ::ARQ(Stream &s, Enquadramento & e):debug(s), enquad(e) {
+    estado = 0;//ocioso;
+    rseq = 0;
+    tseq = 0;
+}
+
+void ARQ::init( unsigned char * _app_buffer, void (*funcaoApp)(void)){
+	app_buffer = _app_buffer;
+	aloha_interval = 1000;
+	fApp = funcaoApp;
+}
+
+void ARQ::run(){
+    if(enquad.getSerial().available()){
+			E.tipo = quadro;
+			handle(E);
+	}
+}
+
+void ARQ::envia(unsigned char * _buffer, int bytes){
+	#ifdef Debug
+		debug.print(F("\nARQ :: envia()	Estado MEF:  ")); debug.println(estado);
+	#endif
+
+   memcpy(arq.campo.msg, _buffer, bytes);
+   E.tipo = payload;
+   E.ptr = arq.campo.msg;
+   E.bytes = bytes;
+   handle(E);        
+}
+
+int ARQ::recebe(){
+    E.tipo = quadro;
+    handle(E);
+    return rx_bytes;
+}
+
+void ARQ::handle(Evento & ev){
+	
+	#ifdef Debug
+		//debug.print(F("\nARQ :: handle()   Estado MEF:  "));
+		//debug.println(estado, HEX);
+	#endif
+	
+ 	switch (estado)
+ 	{
+        case ocioso://---------------------------------------------------
+
+            switch ( ev.tipo )
+			{	
+				 case payload :				
+
+						estado = espera;
+						arq.campo.control = FData | (tseq << 1);
+						tseq = !tseq;	
+
+						if(enquad.getSerial().available()){
+
+							rx_bytes = enquad.recebe(app_buffer);
+							
+							if((app_buffer[0] & 0x01) == FData ){
+
+		                    	aux[0] = app_buffer[0] ^ 0x03;
+		                    	aux[1] =0xff;
+		                    	enquad.envia(aux,8);
+		                    	
+		                    	#ifdef Debug
+		                    		debug.println(F("AcK enviado!"));
+		                    	#endif
+		                    	
+		                    	//Processa mensagem usando
+		                    	//a função passada pela aplicação
+		                    	fApp();    
+		                    	                    	
+		                	}else{		                	
+		                		#ifdef Debug
+		                		debug.println(F("AcK Fora de sequência!"));
+		                		#endif		                		
+		                	}
+						}
+
+						enquad.envia(arq.buf, ev.bytes+1);	
+						
+						srand(millis());
+						timer = millis();
+						aloha_interval = (rand()%10000)+1000;	
+
+						while(1){	
+							if(enquad.getSerial().available()){
+								ev.tipo = quadro;
+								handle(ev);
+								break;
+							}
+					 		if((millis() - timer) >= aloha_interval){	
+								ev.tipo = timeout;
+								handle(ev);
+								break;
+							}
+					 	} 						 	
+						
+				 		break;
+				 case quadro :
+						rx_bytes = enquad.recebe(app_buffer);			
+						
+						if((app_buffer[0] & 0x01) == FData ){
+                        	aux[0] = app_buffer[0] ^ 0x03;
+                        	aux[1] =0xff;
+                        	enquad.envia(aux,8);
+                        	
+                        	#ifdef Debug
+                        		debug.println(F("AcK enviado..."));
+                        	#endif
+                        	
+                        	//Processa mensagem usando
+                        	//a função passada pela aplicação
+                        	fApp();
+                        	
+                    	}else{
+                    	
+                    		#ifdef Debug
+                    		debug.println(F("AcK Fora de sequência!"));
+                    		#endif
+                    		
+                    	}debug.println(F("Quebrou aqui?"));
+				 		break;    
+				 default :
+				 
+				 		#ifdef Debug
+				   			debug.println(F("Evento invalido no estado ocioso!\n"));
+				   		#endif
+				   		break;
+			}
+            break;
+
+        case espera://-----------------------------------
+        
+            switch ( ev.tipo )
+			{	
+				 case payload :		
+				 		// armazenar, aguardar confirmação, enviar
+				 		#ifdef Debug
+                   		 	debug.println(F("Payload. Evento inválido..."));
+                   		 #endif
+				 		 break;
+				 case quadro :
+				 		 rx_bytes = 0;
+						 rx_bytes = enquad.recebe(app_buffer);			 
+						 
+						 estado = espera;// redundante?
+						 if(rx_bytes >= 8){
+						 	if((app_buffer[0] & 0x01) == FData ){
+							 
+							 	#ifdef Debug
+							 		debug.println(F("Quadro de dados! Enviando ACK..."));
+							 	#endif							 	
+
+		                    	aux[0] = app_buffer[0] ^ 0x03;
+		                    	aux[1] =0xff;      
+		                    	enquad.envia(&aux[0],8);
+							  
+							 	                       	 
+		                    	//Processa mensagem usando
+		                    	//a função passada pela aplicação
+		                    	fApp();   
+		                    	  
+		                    	#ifdef Debug
+							 	debug.println(F("Retransmitindo último quadro da aplicação..."));
+							 	#endif                  	
+							
+		                    	enquad.envia(&arq.buf[0], ev.bytes+1);	
+									
+								srand(millis());
+								timer = millis();
+								aloha_interval = (rand()%10000)+1000;//Reinicia timer
+								while(1){	
+									if(enquad.getSerial().available()){
+										ev.tipo = quadro;
+										estado = espera;
+										handle(ev);
+										break;
+									}
+							 		if((millis() - timer) >= aloha_interval){	
+										ev.tipo = timeout;
+										estado = espera;
+										handle(ev);
+										break;
+									}		
+							 	} 
+		                    	
+		                	 }else if(app_buffer[0] ^ (tseq << 1)  == FAck ){
+		                		
+		                		#ifdef Debug
+		                			debug.println(F("ACK OK!!!..."));
+		                		#endif        
+		                		       		
+		                		estado = ocioso;
+		                	 }else{
+		                	 
+		                	 	#ifdef Debug
+		                	 		debug.println(F("Nem Data nem ACK!!!!..."));
+		                	 	#endif 
+		                	 }
+						 	 break;	
+						 }else{
+						 		enquad.envia(&arq.buf[0], ev.bytes+1);							
+								srand(millis());
+								timer = millis();
+								aloha_interval = (rand()%10000)+1000;//Reinicia timer
+								while(1){	
+									if(enquad.getSerial().available()){
+										ev.tipo = quadro;
+										estado = espera;
+										handle(ev);
+										break;
+									}
+							 		if((millis() - timer) >= aloha_interval){	
+										ev.tipo = timeout;
+										estado = espera;
+										handle(ev);
+										break;
+										//timerapp += interval_app;
+									}		
+							 	} 
+						 }
+							 
+				 		 break;
+				 case timeout :
+				 
+				 		#ifdef Debug
+						debug.println(F("\nTimeout ACK!!! Retransmitindo..."));
+							
+						#endif
+						
+						enquad.envia(arq.buf, ev.bytes+1);
+
+						srand(millis());
+						timer = millis();
+						aloha_interval = (rand()%10000)+1000;//millis();// Reinicia o timer
+						#ifdef Debug
+							debug.print(F("\nBackoff Aloha: "));
+							debug.println(aloha_interval, DEC);
+						#endif
+
+						while(1){	
+							if(enquad.getSerial().available()){
+									ev.tipo = quadro;
+									handle(ev);
+									break;
+							}
+							if((millis() - timer) >= aloha_interval){	
+									ev.tipo = timeout;
+									handle(ev);
+									break;
+									//timer += aloha_interval;
+							}		
+						} 
+				 		break;     
+				 default :
+				 		#ifdef Debug
+				   			debug.println(F("Evento invalido no estado espera!\n"));
+				   		#endif
+				   		break;
+			}
+            break;
+        default:
+            break;
+    }	
+   
+}
